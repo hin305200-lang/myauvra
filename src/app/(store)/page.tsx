@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
+import { HeroStage, Marquee, ParallaxFrame, ScrollRail } from "@/components/motion/stage";
 import { Photo } from "@/components/product/photo";
 import { ProductCard, type CardModel } from "@/components/product/product-card";
 import { newsletterAction } from "@/server/store-actions";
@@ -34,32 +35,25 @@ export default async function HomePage() {
   const quotes = ((sectionsByKey.get("testimonials")?.extra as { quotes?: { quote: string; name: string; detail: string }[] } | null)?.quotes) ?? [];
   return (
     <>
-      <section className="hero">
-        <div className="hero-media">
-          <Photo src={settings.heroImage} alt="" priority sizes="100vw" />
-        </div>
-        <div className="hero-copy">
-          <p className="eyebrow" style={{ color: "#f3e6cf" }}>{settings.brandName}</p>
-          <h1 className="display">{settings.heroTitle}</h1>
-          <p>{settings.heroSubtitle}</p>
-          <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", marginTop: "1.4rem" }}>
-            <Link className="btn btn-gold" href={settings.heroButtonHref}>{settings.heroButtonLabel}</Link>
-            {settings.heroSecondaryLabel && settings.heroSecondaryHref ? <Link className="btn btn-line" href={settings.heroSecondaryHref} style={{ color: "white", borderColor: "white" }}>{settings.heroSecondaryLabel}</Link> : null}
-          </div>
-        </div>
-      </section>
-      <section className="section" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
-        <div className="product-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
-          {["Recycled gold", "Set by hand", "Insured delivery"].map((item) => (
-            <p key={item} className="eyebrow" style={{ margin: 0 }}>{item}</p>
-          ))}
-        </div>
+      <HeroStage
+        image={settings.heroImage}
+        brand={settings.brandName}
+        title={settings.heroTitle}
+        subtitle={settings.heroSubtitle}
+        primary={{ href: settings.heroButtonHref, label: settings.heroButtonLabel }}
+        secondary={settings.heroSecondaryLabel && settings.heroSecondaryHref ? { href: settings.heroSecondaryHref, label: settings.heroSecondaryLabel } : null}
+      />
+      <Marquee items={["Light, set in gold", "Member pricing", "Hand finished", "Insured delivery", settings.brandName]} />
+      <section className="assurance">
+        {["Recycled gold", "Set by hand", "Insured delivery", "Future atelier"].map((item, index) => (
+          <p key={item}><span>0{index + 1}</span>{item}</p>
+        ))}
       </section>
       {enabled("promo") ? (
         <Reveal>
           <section className="section" style={{ paddingTop: 0 }}>
             <div className="split">
-              <div className="visual"><Photo src={sectionsByKey.get("promo")?.image || settings.heroImage} alt="" sizes="50vw" /></div>
+              <ParallaxFrame src={sectionsByKey.get("promo")?.image || settings.heroImage} alt="" />
               <div className="copy">
                 <p className="eyebrow">{sectionsByKey.get("promo")?.subtitle}</p>
                 <h2 className="serif" style={{ fontSize: "clamp(2.4rem, 4vw, 4rem)", fontWeight: 500, margin: "0.4rem 0" }}>{sectionsByKey.get("promo")?.title}</h2>
@@ -80,15 +74,16 @@ export default async function HomePage() {
             </div>
             <Link className="btn btn-ghost" href="/collections">View all</Link>
           </div>
-          <div className="product-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-            {collections.map((collection) => (
-              <Link key={collection.id} href={`/collections/${collection.slug}`} className="product-card">
+          <ScrollRail>
+            {collections.map((collection, index) => (
+              <Link key={collection.id} href={`/collections/${collection.slug}`} className="rail-card">
+                <span>0{index + 1}</span>
                 <div className="frame"><Photo src={collection.image} alt={collection.name} sizes="30vw" /></div>
                 <h3>{collection.name}</h3>
                 <p className="price">{collection.description}</p>
               </Link>
             ))}
-          </div>
+          </ScrollRail>
         </section>
       ) : null}
       {enabled("bestsellers") ? <ProductBand title={sectionsByKey.get("bestsellers")?.title || "Most loved"} eyebrow={sectionsByKey.get("bestsellers")?.subtitle || ""} cards={cards.filter((card) => card.bestSeller).slice(0, 4)} /> : null}
@@ -101,7 +96,7 @@ export default async function HomePage() {
               <p>{sectionsByKey.get("editorial")?.body}</p>
               {sectionsByKey.get("editorial")?.ctaHref ? <Link className="btn btn-line" href={sectionsByKey.get("editorial")!.ctaHref!}>{sectionsByKey.get("editorial")?.ctaLabel}</Link> : null}
             </div>
-            <div className="visual"><Photo src={sectionsByKey.get("editorial")?.image} alt="" sizes="50vw" /></div>
+            <ParallaxFrame src={sectionsByKey.get("editorial")?.image} alt="" />
           </section>
         </Reveal>
       ) : null}
@@ -109,7 +104,7 @@ export default async function HomePage() {
       {enabled("story") ? (
         <section className="section">
           <div className="split">
-            <div className="visual"><Photo src={sectionsByKey.get("story")?.image} alt="" sizes="50vw" /></div>
+            <ParallaxFrame src={sectionsByKey.get("story")?.image} alt="" />
             <div className="copy" style={{ background: "var(--ivory)" }}>
               <p className="eyebrow">{sectionsByKey.get("story")?.subtitle}</p>
               <h2 className="serif" style={{ fontSize: "clamp(2.6rem, 4vw, 4rem)", fontWeight: 500 }}>{sectionsByKey.get("story")?.title}</h2>
@@ -180,7 +175,11 @@ function ProductBand({ title, eyebrow, cards }: { title: string; eyebrow?: strin
         <Link className="btn btn-ghost" href="/shop">Shop all</Link>
       </div>
       <div className="product-grid">
-        {cards.map((card) => <ProductCard key={card.id + title} product={card} />)}
+        {cards.map((card, index) => (
+          <Reveal key={card.id + title} delay={index * 0.08}>
+            <ProductCard product={card} />
+          </Reveal>
+        ))}
       </div>
     </section>
   );

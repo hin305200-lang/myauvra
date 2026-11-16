@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { NAV } from "@/lib/copy";
 import { useCart } from "./cart-provider";
+import { ScrollProgress } from "@/components/motion/stage";
 
 export function Header({
   brand,
@@ -36,6 +37,7 @@ export function Header({
   useEffect(() => setOpen(false), [path]);
   return (
     <header className={`site-header ${scrolled ? "scrolled" : ""}`}>
+      <ScrollProgress />
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
         <button className="icon-btn menu-toggle" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={20} /></button>
         <Link href="/" className="wordmark">
