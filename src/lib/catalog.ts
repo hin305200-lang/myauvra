@@ -2,11 +2,9 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { memberUnitPrice, publicUnitPrice } from "./pricing";
 
 export const productInclude = {
-  images: { orderBy: { position: "asc" as const } },
+  images: { orderBy: { position: "asc" as const }, take: 2 },
   variants: { orderBy: { sku: "asc" as const } },
   category: true,
-  collections: { include: { collection: true } },
-  reviews: { where: { published: true }, select: { rating: true, id: true } },
 } satisfies Prisma.ProductInclude;
 
 export type CatalogFilters = {
@@ -111,6 +109,7 @@ export async function getProduct(prisma: PrismaClient, slug: string) {
     where: { slug, published: true },
     include: {
       ...productInclude,
+      images: { orderBy: { position: "asc" as const } },
       reviews: {
         where: { published: true },
         include: { user: { select: { name: true } } },

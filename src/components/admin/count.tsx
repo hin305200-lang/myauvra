@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatMoney } from "@/lib/format";
 
-export function CountUp({ value, format }: { value: number; format?: (value: number) => string }) {
+export function CountUp({ value, currency }: { value: number; currency?: string }) {
   const [shown, setShown] = useState(0);
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -20,5 +21,5 @@ export function CountUp({ value, format }: { value: number; format?: (value: num
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value]);
-  return <>{format ? format(shown) : shown.toLocaleString("en-US")}</>;
+  return <>{currency ? formatMoney(shown, currency) : shown.toLocaleString("en-US")}</>;
 }

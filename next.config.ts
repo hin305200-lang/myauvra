@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
     "bcryptjs",
   ],
   images: {
+    // Serve remote photos directly. Resizing them inside the app made every page wait on the image proxy.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },

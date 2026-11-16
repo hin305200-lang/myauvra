@@ -30,7 +30,7 @@ export default async function AdminHome() {
     <div>
       <h1 className="serif" style={{ fontSize: "2.8rem", fontWeight: 500 }}>Overview</h1>
       <div className="stat-grid">
-        <article className="stat"><span>Revenue</span><b><CountUp value={(revenue._sum.total ?? 0) / 100} format={(value) => formatMoney(Math.round(value * 100), currency)} /></b></article>
+        <article className="stat"><span>Revenue</span><b><CountUp value={revenue._sum.total ?? 0} currency={currency} /></b></article>
         <article className="stat"><span>Orders</span><b><CountUp value={orders} /></b></article>
         <article className="stat"><span>Customers</span><b><CountUp value={customers} /></b></article>
         <article className="stat"><span>Products</span><b><CountUp value={products} /></b></article>

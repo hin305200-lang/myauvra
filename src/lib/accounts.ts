@@ -104,10 +104,16 @@ export async function ensureAdmin(prisma: PrismaClient) {
   if (!email || password.length < 8) return { created: false as const };
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    if (existing.role !== "ADMIN" || existing.suspended) {
+    const matches = await verifyPassword(password, existing.passwordHash);
+    if (!matches || existing.role !== "ADMIN" || existing.suspended || !existing.emailVerified) {
       await prisma.user.update({
         where: { id: existing.id },
-        data: { role: "ADMIN", suspended: false, emailVerified: existing.emailVerified ?? new Date() },
+        data: {
+          role: "ADMIN",
+          suspended: false,
+          emailVerified: existing.emailVerified ?? new Date(),
+          ...(matches ? {} : { passwordHash: await hashPassword(password) }),
+        },
       });
     }
     return { created: false as const };
