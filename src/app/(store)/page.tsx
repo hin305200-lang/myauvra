@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
-import { HeroStage, Marquee, ParallaxFrame, ScrollRail } from "@/components/motion/stage";
+import { DragRail } from "@/components/motion/drag-rail";
+import { EnterGate } from "@/components/motion/enter-gate";
+import { ParallaxFrame } from "@/components/motion/stage";
 import { Photo } from "@/components/product/photo";
 import { ProductCard, type CardModel } from "@/components/product/product-card";
 import { newsletterAction } from "@/server/store-actions";
@@ -35,18 +37,49 @@ export default async function HomePage() {
   const quotes = ((sectionsByKey.get("testimonials")?.extra as { quotes?: { quote: string; name: string; detail: string }[] } | null)?.quotes) ?? [];
   return (
     <>
-      <HeroStage
-        image={settings.heroImage}
-        brand={settings.brandName}
-        title={settings.heroTitle}
-        subtitle={settings.heroSubtitle}
-        primary={{ href: settings.heroButtonHref, label: settings.heroButtonLabel }}
-        secondary={settings.heroSecondaryLabel && settings.heroSecondaryHref ? { href: settings.heroSecondaryHref, label: settings.heroSecondaryLabel } : null}
-      />
-      <Marquee items={["Light, set in gold", "Member pricing", "Hand finished", "Insured delivery", settings.brandName]} />
-      <section className="assurance">
-        {["Recycled gold", "Set by hand", "Insured delivery", "Future atelier"].map((item, index) => (
-          <p key={item}><span>0{index + 1}</span>{item}</p>
+      <EnterGate brand={settings.brandName} line={settings.heroSubtitle} />
+      <section className="statement">
+        <p className="statement-brand">{settings.brandName}</p>
+        <h1>{settings.heroTitle}</h1>
+        <p className="statement-sub">{settings.heroSubtitle}</p>
+        <div className="statement-links">
+          <Link className="arrow-link" href={settings.heroButtonHref}>⮡ {settings.heroButtonLabel}</Link>
+          {settings.heroSecondaryHref && settings.heroSecondaryLabel ? <Link className="arrow-link" href={settings.heroSecondaryHref}>⮡ {settings.heroSecondaryLabel}</Link> : null}
+        </div>
+      </section>
+      <section className="world">
+        <div className="world-label">
+          <span>Drag to explore the atelier</span>
+          <span>Selected pieces</span>
+        </div>
+        <DragRail>
+          {cards.slice(0, 8).map((card, index) => (
+            <Link key={card.id} href={`/product/${card.slug}`} className="world-card">
+              <div className="frame"><Photo src={card.images[0]} alt={card.name} sizes="40vw" /></div>
+              <div className="world-meta">
+                <span>0{index + 1}</span>
+                <strong>{card.name}</strong>
+                <em>{card.material}</em>
+              </div>
+            </Link>
+          ))}
+        </DragRail>
+      </section>
+      <section className="index-filters">
+        <p>Index</p>
+        {[["All", "/shop"], ["Rings", "/rings"], ["Necklaces", "/necklaces"], ["Earrings", "/earrings"], ["Bracelets", "/bracelets"]].map(([label, href]) => (
+          <Link key={href} href={href}>{label}</Link>
+        ))}
+      </section>
+      <section className="selected">
+        <div className="world-label"><span>Selected jewelry</span><span>{cards.length} pieces</span></div>
+        {cards.slice(0, 6).map((card, index) => (
+          <Link key={card.id} href={`/product/${card.slug}`} className="selected-row">
+            <span>0{index + 1}</span>
+            <strong>{card.name}</strong>
+            <em>{card.material}</em>
+            <b aria-hidden="true">⮡</b>
+          </Link>
         ))}
       </section>
       {enabled("promo") ? (
@@ -74,7 +107,7 @@ export default async function HomePage() {
             </div>
             <Link className="btn btn-ghost" href="/collections">View all</Link>
           </div>
-          <ScrollRail>
+          <DragRail>
             {collections.map((collection, index) => (
               <Link key={collection.id} href={`/collections/${collection.slug}`} className="rail-card">
                 <span>0{index + 1}</span>
@@ -83,7 +116,7 @@ export default async function HomePage() {
                 <p className="price">{collection.description}</p>
               </Link>
             ))}
-          </ScrollRail>
+          </DragRail>
         </section>
       ) : null}
       {enabled("bestsellers") ? <ProductBand title={sectionsByKey.get("bestsellers")?.title || "Most loved"} eyebrow={sectionsByKey.get("bestsellers")?.subtitle || ""} cards={cards.filter((card) => card.bestSeller).slice(0, 4)} /> : null}

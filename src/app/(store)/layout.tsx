@@ -17,7 +17,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const wishCount = viewer ? await prisma.wishlistItem.count({ where: { wishlist: { userId: viewer.id } } }) : 0;
   const cartCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
   return (
-    <>
+    <div className="unseen">
       <a className="skip" href="#content">Skip to content</a>
       {settings.announcementEnabled ? (
         <div className="announce">
@@ -29,6 +29,6 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <main id="content">{children}</main>
         <Footer settings={settings} />
       </CartProvider>
-    </>
+    </div>
   );
 }

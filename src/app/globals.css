@@ -54,7 +54,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 1;
-  opacity: 0.18;
+  opacity: 0.05;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 }
@@ -373,7 +373,7 @@ label.lbl { display: grid; gap: 0.4rem; font-size: 0.78rem; letter-spacing: 0.12
 .quote-card p { font-family: var(--font-serif); font-size: clamp(1.6rem, 2vw, 2.1rem); line-height: 1.25; margin: 0; }
 
 .social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
-.social-grid a { aspect-ratio: 1; overflow: hidden; background: var(--sand); }
+.social-grid a { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--sand); }
 .social-grid img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
 .social-grid a:hover img { transform: scale(1.05); }
 
@@ -461,6 +461,67 @@ table.data td { padding: 0.8rem 0.7rem; border-bottom: 1px solid var(--line); ve
   .section { padding: 3.5rem 1.2rem; }
   .site-header, .site-footer { padding-left: 1rem; padding-right: 1rem; }
 }
+.unseen { background: #fff; color: #212121; min-height: 100svh; }
+.unseen .site-header { background: rgba(255,255,255,0.9); }
+.unseen .announce { background: #fff; color: #212121; border-bottom: 1px solid #e7e7e7; }
+.unseen .wordmark { font-size: 1.35rem; letter-spacing: 0.08em; }
+.unseen .wordmark small, .unseen .scroll-progress { display: none; }
+.unseen .nav-desktop a { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.68rem; }
+.unseen .site-footer, .unseen .site-footer a { background: #fff; color: #212121; }
+.unseen .site-footer .muted { color: #666; }
+.unseen .field { background: #fff; border-color: #212121; }
+
+.statement { min-height: 88svh; display: flex; flex-direction: column; justify-content: flex-end; padding: 14vh 6vw 3.5rem; background: #fff; }
+.statement-brand { margin: 0 0 1rem; letter-spacing: 0.28em; text-transform: uppercase; font-size: 0.72rem; }
+.statement h1 { margin: 0; max-width: 12ch; font-family: var(--font-serif); font-weight: 500; font-style: italic; font-size: clamp(4rem, 12vw, 10rem); line-height: 0.84; letter-spacing: -0.05em; }
+.statement-sub { max-width: 34rem; font-size: 1.15rem; margin-top: 1.2rem; }
+.statement-links { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.6rem; }
+.arrow-link { display: inline-flex; align-items: center; gap: 0.45rem; border-bottom: 1px solid currentColor; padding-bottom: 0.2rem; letter-spacing: 0.04em; transition: transform 0.35s ease; }
+.arrow-link:hover { transform: translateX(8px); }
+
+.world { padding: 1rem 0 3rem; }
+.world-label, .index-filters { display: flex; justify-content: space-between; gap: 1rem; padding: 0 6vw 0.8rem; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.index-filters { border-top: 1px solid #e7e7e7; padding-top: 1rem; }
+.index-filters a { border-bottom: 1px solid transparent; }
+.index-filters a:hover { border-bottom-color: #212121; }
+.drag-rail { overflow-x: auto; cursor: grab; scrollbar-width: none; }
+.drag-rail::-webkit-scrollbar { display: none; }
+.drag-rail:active { cursor: grabbing; }
+.drag-rail-track { display: flex; gap: 0.8rem; width: max-content; padding: 0 6vw 1rem; }
+.world-card { width: min(78vw, 460px); color: #212121; }
+.world-card .frame { position: relative; aspect-ratio: 3/4; overflow: hidden; background: #f4f1ec; }
+.rail-card .frame { position: relative; aspect-ratio: 3/4; overflow: hidden; background: #f4f1ec; }
+.world-meta { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.75rem; }
+.world-meta strong { font-family: var(--font-serif); font-size: 1.45rem; font-weight: 500; line-height: 1.1; }
+.world-meta em { font-style: italic; color: #666; }
+.selected { padding-bottom: 3rem; }
+.selected .world-label { padding-top: 1.5rem; }
+@media (max-width: 700px) {
+  .announce { letter-spacing: 0.08em; font-size: 0.62rem; padding: 0.5rem 0.8rem; }
+}
+.selected-row { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto auto; gap: 1rem; align-items: baseline; margin: 0 6vw; padding: 1.15rem 0; border-top: 1px solid #212121; color: #212121; }
+.selected-row strong { font-family: var(--font-serif); font-weight: 500; font-size: clamp(2rem, 5vw, 4.4rem); letter-spacing: -0.045em; line-height: 0.9; }
+.selected-row em { font-style: italic; color: #666; }
+.selected-row b { transition: transform 0.35s ease; }
+.selected-row:hover strong { font-style: italic; }
+.selected-row:hover b { transform: translateX(10px); }
+@media (max-width: 700px) {
+  .selected-row { grid-template-columns: 2rem minmax(0, 1fr) auto; }
+  .selected-row em { display: none; }
+}
+
+.hello { padding: 0 0 2rem; }
+.hello p { letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.72rem; }
+.hello h2 { margin: 0.2rem 0 1rem; font-family: var(--font-serif); font-weight: 500; font-style: italic; font-size: clamp(3.2rem, 8vw, 7rem); line-height: 0.88; letter-spacing: -0.04em; }
+
+.enter-gate { position: fixed; inset: 0; z-index: 90; background: #fff; color: #212121; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+.enter-letters { display: flex; gap: 0.35rem; margin-bottom: 1.6rem; }
+.enter-letters span { width: clamp(2.4rem, 8vw, 3.6rem); height: clamp(3.2rem, 10vw, 4.8rem); border: 1px solid #212121; display: grid; place-items: center; font-family: var(--font-serif); font-size: clamp(1.4rem, 4vw, 2.2rem); animation: rise 0.8s both; }
+.enter-letters span:nth-child(3) { background: #f3d2cb; }
+.enter-brand { margin: 0; font-family: var(--font-serif); font-size: clamp(2.2rem, 5vw, 4rem); }
+.enter-line { max-width: 36rem; }
+.enter-btn { margin-top: 1.6rem; background: #212121; color: #fff; border: 0; min-height: 3.1rem; padding: 0 1.3rem; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

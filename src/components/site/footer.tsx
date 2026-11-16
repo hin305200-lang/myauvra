@@ -19,6 +19,11 @@ export function Footer({
 }) {
   return (
     <footer className="site-footer">
+      <div className="hello">
+        <p>Say hello</p>
+        <h2>The atelier<br />is listening</h2>
+        <Link className="arrow-link" href="/contact">⮡ Write to the atelier</Link>
+      </div>
       <div className="footer-grid">
         <div>
           <h3>{settings.brandName}</h3>
