@@ -1,0 +1,458 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  TEST
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  phone         String?
+  role          Role      @default(CUSTOMER)
+  emailVerified DateTime?
+  suspended     Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  addresses      Address[]
+  orders         Order[]
+  reviews        Review[]
+  wishlist       Wishlist?
+  cart           Cart?
+  discountUsages DiscountUsage[]
+  adminLogs      AdminActivityLog[]
+
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  position    Int       @default(0)
+  products    Product[]
+}
+
+model Collection {
+  id          String              @id @default(cuid())
+  name        String
+  slug        String              @unique
+  description String?             @db.Text
+  image       String?
+  featured    Boolean             @default(false)
+  position    Int                 @default(0)
+  products    ProductCollection[]
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String   @db.Text
+  details         String?  @db.Text
+  price           Int
+  salePrice       Int?
+  material        String
+  gemstone        String?
+  categoryId      String
+  featured        Boolean  @default(false)
+  bestSeller      Boolean  @default(false)
+  isNew           Boolean  @default(false)
+  published       Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category    Category            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images      ProductImage[]
+  variants    ProductVariant[]
+  collections ProductCollection[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  wishlistItems WishlistItem[]
+
+  @@index([categoryId])
+  @@index([published, createdAt])
+  @@index([featured])
+  @@index([bestSeller])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id         String  @id @default(cuid())
+  productId  String
+  sku        String  @unique
+  size       String?
+  color      String?
+  colorHex   String?
+  stock      Int     @default(0)
+  price      Int?
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+}
+
+model ProductCollection {
+  productId    String
+  collectionId String
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([productId, collectionId])
+  @@index([collectionId])
+}
+
+model Cart {
+  id           String     @id @default(cuid())
+  userId       String?    @unique
+  token        String?    @unique
+  discountCode String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  user         User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items        CartItem[]
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  productId String
+  variantId String
+  quantity  Int
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+}
+
+model Wishlist {
+  id     String         @id @default(cuid())
+  userId String         @unique
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  productId  String
+  createdAt  DateTime @default(now())
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@index([productId])
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  label      String?
+  fullName   String
+  line1      String
+  line2      String?
+  city       String
+  region     String
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean @default(false)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Order {
+  id                    String        @id @default(cuid())
+  number                String        @unique
+  userId                String?
+  email                 String
+  phone                 String?
+  status                OrderStatus   @default(PENDING)
+  paymentStatus         PaymentStatus @default(PENDING)
+  currency              String        @default("USD")
+  subtotal              Int
+  memberDiscount        Int           @default(0)
+  codeDiscount          Int           @default(0)
+  discountTotal         Int           @default(0)
+  shippingTotal         Int           @default(0)
+  taxTotal              Int           @default(0)
+  total                 Int
+  discountCode          String?
+  discountId            String?
+  shippingMethod        String?
+  trackingNumber        String?
+  shippingAddress       Json
+  billingAddress        Json
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?       @unique
+  idempotencyKey        String?       @unique
+  stockRestored         Boolean       @default(false)
+  notes                 String?       @db.Text
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  user                  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items                 OrderItem[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([status, createdAt])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String          @id @default(cuid())
+  orderId   String
+  productId String?
+  variantId String?
+  name      String
+  sku       String?
+  image     String?
+  unitPrice Int
+  quantity  Int
+  lineTotal Int
+  size      String?
+  color     String?
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Discount {
+  id               String         @id @default(cuid())
+  code             String         @unique
+  type             DiscountType
+  value            Int
+  description      String?
+  minPurchase      Int            @default(0)
+  usageLimit       Int?
+  usedCount        Int            @default(0)
+  perCustomerLimit Int?
+  startsAt         DateTime?
+  expiresAt        DateTime?
+  active           Boolean        @default(true)
+  productIds       String[]       @default([])
+  collectionIds    String[]       @default([])
+  categoryIds      String[]       @default([])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  usages           DiscountUsage[]
+
+  @@index([active])
+}
+
+model DiscountUsage {
+  id         String   @id @default(cuid())
+  discountId String
+  userId     String?
+  orderId    String?
+  email      String?
+  createdAt  DateTime @default(now())
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([discountId])
+  @@index([userId])
+  @@index([email])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int
+  title     String?
+  body      String   @db.Text
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model WebsiteSettings {
+  id                    String   @id @default("default")
+  brandName             String   @default("Auvra")
+  tagline               String   @default("Fine jewelry, quietly luminous.")
+  logoUrl               String?
+  faviconUrl            String?
+  colorBackground       String   @default("#FAF8F3")
+  colorSecondary        String   @default("#F0EBE2")
+  colorGold             String   @default("#C5A46D")
+  colorText             String   @default("#24211E")
+  colorMuted            String   @default("#81796F")
+  fontPair              String   @default("cormorant")
+  announcementEnabled   Boolean  @default(true)
+  announcementText      String   @default("Complimentary insured shipping on orders above $500")
+  announcementLink      String?
+  heroImage             String
+  heroTitle             String
+  heroSubtitle          String
+  heroButtonLabel       String
+  heroButtonHref        String
+  heroSecondaryLabel    String?
+  heroSecondaryHref     String?
+  footerAbout           String   @db.Text
+  contactEmail          String
+  contactPhone          String
+  contactAddress        String
+  instagram             String?
+  pinterest             String?
+  facebook              String?
+  currency              String   @default("USD")
+  taxRateBps            Int      @default(0)
+  taxInclusive          Boolean  @default(false)
+  shippingFlat          Int      @default(2500)
+  shippingExpressExtra  Int      @default(3500)
+  shippingFreeOver      Int      @default(50000)
+  memberDiscountPercent Int      @default(10)
+  stackDiscounts        Boolean  @default(false)
+  legalName             String   @default("Auvra Atelier")
+  legalAddress          String   @default("Update this address in Admin → Settings before publication.")
+  materialOptions       String[] @default([])
+  gemstoneOptions       String[] @default([])
+  updatedAt             DateTime @updatedAt
+}
+
+model HomepageSection {
+  id       String  @id @default(cuid())
+  key      String  @unique
+  title    String?
+  subtitle String?
+  body     String? @db.Text
+  image    String?
+  ctaLabel String?
+  ctaHref  String?
+  enabled  Boolean @default(true)
+  position Int     @default(0)
+  extra    Json?
+
+  @@index([position])
+}
+
+model AdminActivityLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  action    String
+  entity    String?
+  entityId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  admin     User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([adminId])
+}
